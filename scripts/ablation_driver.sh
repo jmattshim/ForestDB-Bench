@@ -9,9 +9,9 @@ popd
 
 rm summary.txt
 
-MODE=$1 # host, csd, flax
+MODE=$1 # A, B
 for ((iter = 0; iter < 1; iter += 1)); do
-	for ((vlen = 128; vlen <= 4096; vlen *= 2)); do
+	for ((vlen = 4096; vlen <= 4096; vlen *= 2)); do
 		./compaction_test.sh $MODE $vlen | tee ops_log-$iter-$vlen
 		sleep 180
 	done
