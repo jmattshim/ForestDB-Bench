@@ -5,9 +5,11 @@ BENCH_PATH="/home/flax/forestdb-bench/build/rocksdb_bench"
 
 /home/flax/flax_set_cgroup.sh
 
-WL_PATH="../workloads/read/4G/$1"
-#WL_PATH="../workloads/read/25G/$1"
-#WL_PATH="../workloads/read/bloom/$1"
+# Usage: ./read-only_test.sh <workload> [size]
+#   workload : workload name (e.g. workloada)
+#   size     : 4G (default) | 25G | bloom
+SIZE="${2:-4G}"
+WL_PATH="../workloads/read/$SIZE/$1"
 
 today=$(date "+%Y%m%d%H%M%S")
 
