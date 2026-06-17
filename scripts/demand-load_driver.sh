@@ -9,14 +9,9 @@ pushd ycsb_logs
 sudo rm -rf LOG*
 popd
 rm summary.txt
-rm ops_log-*
 
-MODE=$1 # host, csd, compaction-only, read-only, flax
-TYPE="${2:-4096}" # 128, 4096
-
-for ((iter = 0; iter < 1; iter += 1)); do
-	./ycsb_run.sh $MODE $TYPE 
-done
+MODE=$1
+./read-only_test.sh $MODE 4G
 
 today=$(date "+%Y%m%d%H%M%S")
 OUTDIR="results_YCSB/$today"
@@ -26,4 +21,3 @@ mkdir $OUTDIR/config
 cp logs/* $OUTDIR/
 cp -r ycsb_logs $OUTDIR/
 cp summary.txt $OUTDIR/
-

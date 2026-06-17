@@ -1,15 +1,16 @@
 #!/bin/bash
 
-LIBRARY_PATH="/home/flax/rocksdb-csd/build"
-BENCH_PATH="/home/flax/forestdb-bench/build/rocksdb_bench"
+LIBRARY_PATH="../../rocksdb/build"
+BENCH_PATH="./rocksdb_bench"
 
-/home/flax/flax_set_cgroup.sh
+TYPE="${2:-4G}"
+WL_PATH="../workloads/read/$TYPE/$1"
 
-# Usage: ./read-only_test.sh <workload> [size]
-#   workload : workload name (e.g. workloada)
-#   size     : 4G (default) | 25G | bloom
-SIZE="${2:-4G}"
-WL_PATH="../workloads/read/$SIZE/$1"
+if [ "$TYPE" = "25G" ]; then
+	./set_cgroup_25G.sh
+else
+	./set_cgroup_4G.sh
+fi
 
 today=$(date "+%Y%m%d%H%M%S")
 
@@ -19,7 +20,11 @@ function do_init() {
 	sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches '
 	sleep 5
 
-	./load_virt.sh || exit
+	if [ "$TYPE" = "bloom" ]; then
+		./load_virt.sh bloom || exit
+	else
+		./load_virt.sh || exit
+	fi
 }
 
 pushd $LIBRARY_PATH
@@ -36,12 +41,8 @@ taskset -p -c $CPU_AFFINITY $$ &> /dev/null
 sleep 1
 
 do_init
-#sleep 60
-#sudo sh -c 'echo 1 > /proc/nvmev/io_stat '
-sudo LD_LIBRARY_PATH=$LIBRARY_PATH cgexec -g cpuset,memory,cpu:/flax.slice $BENCH_PATH -f $WL_PATH/uniform.ini -e 
-#sudo LD_LIBRARY_PATH=$LIBRARY_PATH cgexec -g cpuset,memory,cpu:/flax.slice $BENCH_PATH -f $WL_PATH/skewed.ini -e 
+sudo LD_LIBRARY_PATH=$LIBRARY_PATH cgexec -g cpuset,memory,cpu:/flax.slice $BENCH_PATH -f $WL_PATH/read.ini -e 
 cp /mnt/nvme/rocks/db_run_rocks0.0/LOG ycsb_logs/LOG_c-$today
-#sudo sh -c 'cat /proc/nvmev/io_stat ' >> stat.txt
 
 echo "Extract Stats Phase"
 

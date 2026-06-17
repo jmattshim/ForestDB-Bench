@@ -1,9 +1,9 @@
 #!/bin/bash
 
-LIBRARY_PATH="/home/flax/rocksdb-csd/build"
-BENCH_PATH="/home/flax/forestdb-bench/build/rocksdb_bench"
+LIBRARY_PATH="../../rocksdb/build"
+BENCH_PATH="./rocksdb_bench"
 
-/home/flax/flax_set_cgroup.sh
+./set_cgroup_4G.sh
 
 WL_PATH="../workloads/load/$1"
 
@@ -19,7 +19,7 @@ function do_init() {
 	make -j 32 || exit
 	popd
 
-	pushd /home/flax/csd_bench/tools/virt
+	pushd ../../src/
 	./init_nvmev.sh
 	popd
 }
@@ -49,4 +49,3 @@ cat ycsb_logs/LOG_$1-$2-$today | ./breakdown_compaction.py >> $OUTPUT
 echo "" >> $OUTPUT
 cat ycsb_logs/LOG_$1-$2-$today | ./cdf_write_latency.py >> $OUTPUT
 
-sudo chown -R flax:flax logs

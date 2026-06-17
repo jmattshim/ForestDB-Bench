@@ -40,8 +40,6 @@ results = [
     percentile(latencies, 90),
     percentile(latencies, 95),
     percentile(latencies, 99),
-    percentile(latencies, 99.9),
-    percentile(latencies, 99.99),
 ]
 print(",".join(str(x) for x in results))
 #print("\n".join(str(x) for x in results))
