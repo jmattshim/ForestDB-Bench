@@ -111,14 +111,6 @@ couchstore_error_t couchstore_open_db_ex(const char *filename,
         ppdb->options->compression = rocksdb::kNoCompression;
     }
 
-    // ppdb->options->max_background_compactions = 8;
-    // ppdb->options->max_background_flushes = 8;
-    // ppdb->options->max_write_buffer_number = 8;
-    // ppdb->options->write_buffer_size = wbs_size;
-    // ppdb->options->compaction_style = rocksdb::CompactionStyle(compaction_style);
-
-    // ppdb->options->enable_pipelined_write = true;
-
     if (cache_size || bloom_bits_per_key) {
         rocksdb::BlockBasedTableOptions table_options;
         if (cache_size) {
@@ -128,12 +120,11 @@ couchstore_error_t couchstore_open_db_ex(const char *filename,
             table_options.filter_policy.reset(
                 rocksdb::NewBloomFilterPolicy(bloom_bits_per_key));
         }
-        table_options.cache_index_and_filter_blocks = true;
         ppdb->options->table_factory.reset(
             rocksdb::NewBlockBasedTableFactory(table_options));
     }
     ppdb->options->max_open_files = 16;
-	ppdb->options->use_direct_reads = true;
+    ppdb->options->use_direct_reads = true;
 
     ppdb->options->csd_offload = csd_offload;
     ppdb->options->csd_magic = csd_magic;
@@ -142,11 +133,7 @@ couchstore_error_t couchstore_open_db_ex(const char *filename,
     ppdb->options->read_magic = read_magic;
 
 	ppdb->options->max_background_jobs = num_background_threads;
-
 	ppdb->options->max_subcompactions = 2;
-
-    // ppdb->options->statistics = rocksdb::CreateDBStatistics();
-    // ppdb->options->stats_dump_period_sec = 60;
 
     rocksdb::Status status = rocksdb::DB::Open(
         *ppdb->options, *ppdb->filename, &ppdb->db);
@@ -154,8 +141,6 @@ couchstore_error_t couchstore_open_db_ex(const char *filename,
     ppdb->read_options = new rocksdb::ReadOptions();
     ppdb->read_options->read_offload = read_offload;
     ppdb->write_options = new rocksdb::WriteOptions();
-    // ppdb->write_options->sync = true;
-	// ppdb->write_options->disableWAL = false;
 
     return COUCHSTORE_SUCCESS;
 }
@@ -357,16 +342,16 @@ LIBCOUCHSTORE_API
 couchstore_error_t couchstore_docinfo_by_id(Db *db, const void *id, size_t idlen, DocInfo **pInfo)
 {
     rocksdb::Status status;
-    std::string *value = NULL;
+    std::string value;
     size_t valuelen= 0;
     size_t rev_meta_size;
     size_t meta_offset;
 
     status = db->db->Get(*db->read_options, rocksdb::Slice((char*)id, idlen),
-                         value);
+                         &value);
     meta_offset = sizeof(uint64_t)*1 + sizeof(int) +
                   sizeof(couchstore_content_meta_flags);
-    memcpy(&rev_meta_size, (uint8_t*)value + sizeof(uint16_t) + meta_offset,
+    memcpy(&rev_meta_size, (uint8_t*)value.data() + sizeof(uint16_t) + meta_offset,
            sizeof(size_t));
 
     *pInfo = (DocInfo *)malloc(sizeof(DocInfo) + rev_meta_size);
@@ -375,9 +360,7 @@ couchstore_error_t couchstore_docinfo_by_id(Db *db, const void *id, size_t idlen
     (*pInfo)->size = idlen + valuelen;
     (*pInfo)->bp = 0;
     (*pInfo)->db_seq = 0;
-    _buf_to_docinfo((uint8_t*)value + sizeof(uint16_t), valuelen, (*pInfo));
-
-    free(value);
+    _buf_to_docinfo((uint8_t*)value.data() + sizeof(uint16_t), valuelen, (*pInfo));
 
     return COUCHSTORE_SUCCESS;
 }
@@ -389,7 +372,7 @@ couchstore_error_t couchstore_docinfos_by_id(Db *db, const sized_buf ids[], unsi
     size_t i;
     DocInfo *docinfo;
     rocksdb::Status status;
-    std::string *value = NULL;
+    std::string value;
     size_t valuelen = 0;
     size_t rev_meta_size, max_meta_size = 256;
     size_t meta_offset;
@@ -399,9 +382,9 @@ couchstore_error_t couchstore_docinfos_by_id(Db *db, const sized_buf ids[], unsi
 
     for (i=0;i<numDocs;++i){
         status = db->db->Get(*db->read_options,
-                             rocksdb::Slice(ids[i].buf, ids[i].size), value);
+                             rocksdb::Slice(ids[i].buf, ids[i].size), &value);
 
-        memcpy(&rev_meta_size, (uint8_t*)value + sizeof(uint16_t) + meta_offset,
+        memcpy(&rev_meta_size, (uint8_t*)value.data() + sizeof(uint16_t) + meta_offset,
                sizeof(size_t));
         if (rev_meta_size > max_meta_size) {
             max_meta_size = rev_meta_size;
@@ -414,8 +397,7 @@ couchstore_error_t couchstore_docinfos_by_id(Db *db, const sized_buf ids[], unsi
         docinfo->size = ids[i].size + valuelen;
         docinfo->bp = 0;
         docinfo->db_seq = 0;
-        _buf_to_docinfo((uint8_t*)value + sizeof(uint16_t), valuelen, docinfo);
-        free(value);
+        _buf_to_docinfo((uint8_t*)value.data() + sizeof(uint16_t), valuelen, docinfo);
 
         callback(db, docinfo, ctx);
     }
