@@ -1,6 +1,5 @@
 #!/bin/bash
-ssd_name_alias="/dev/disk/by-id/nvme-Dell_DC_NVMe_PE8010_RI_U.2_960GB_SSA9N4572I2309E0A"
-MOUNT_SSD="$( realpath "${ssd_name_alias}" )"
+MOUNT_SSD="/dev/nvme11n1" # your ssd for prepared DBs
 
 sudo mount $MOUNT_SSD /mnt/ssd
 
