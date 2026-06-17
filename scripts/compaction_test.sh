@@ -26,7 +26,7 @@ function do_init() {
 
 do_init
 
-cmake -DCMAKE_INCLUDE_PATH=/home/flax/rocksdb-csd/include -DCMAKE_LIBRARY_PATH=/home/flax/rocksdb-csd/build ../
+cmake -DCMAKE_INCLUDE_PATH=../../rocksdb/include -DCMAKE_LIBRARY_PATH=../../rocksdb/build ../
 make rocksdb_bench || exit
 
 CPU_AFFINITY=0-127

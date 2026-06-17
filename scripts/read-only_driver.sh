@@ -26,27 +26,27 @@ MODE="compound"
 ./read-only_test.sh $MODE $TYPE
 
 MODE="compound"
-pushd /home/flax/rocksdb-csd/db
+pushd ../../rocksdb/db
 cp 20.cc version_set.cc
 popd
 ./read-only_test.sh $MODE $TYPE
 
-pushd /home/flax/rocksdb-csd/db
+pushd ../../rocksdb/db
 cp 40.cc version_set.cc
 popd
 ./read-only_test.sh $MODE $TYPE
 
-pushd /home/flax/rocksdb-csd/db
+pushd ../../rocksdb/db
 cp 60.cc version_set.cc
 popd
 ./read-only_test.sh $MODE $TYPE
 
-pushd /home/flax/rocksdb-csd/db
+pushd ../../rocksdb/db
 cp 80.cc version_set.cc
 popd
 ./read-only_test.sh $MODE $TYPE
 
-pushd /home/flax/rocksdb-csd/db
+pushd ../../rocksdb/db
 git checkout version_set.cc
 popd
 
